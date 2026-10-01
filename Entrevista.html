@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Formato de Entrevista Cliente o Usuario - Notaría 129</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #2c3e50;
+            --header-bg: #5d6d7e;
+            --border-color: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #d1d1d1;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+
+        #form-content {
+            background-color: white;
+            width: 760px; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            margin: 0 auto;
+        }
+
+        /* CLASE PARA CADA PÁGINA INDIVIDUAL DEL PDF */
+        .page-container {
+            position: relative;
+            width: 100%;
+            padding: 25px 35px;
+            box-sizing: border-box;
+            min-height: 1050px; 
+            overflow: hidden;
+            page-break-after: always;
+            background-color: white;
+        }
+
+        .page-container.no-break {
+            page-break-after: auto;
+        }
+
+        /* MARCA DE AGUA CENTRAL POR PÁGINA */
+        .marca-agua {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 650px; 
+            height: 650px;
+            background-image: url('https://i.postimg.cc/gJxG7j25/Logo-Extended-png.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            z-index: 0; 
+            pointer-events: none;
+        }
+
+        .content-layer {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-top {
+            font-size: 11px;
+            text-align: left;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .logo-container { width: 85px; display: flex; align-items: center; }
+        .logo-img { width: 75px; height: auto; }
+
+        .notary-info { text-align: left; flex-grow: 1; padding: 0 15px; }
+        .notary-info h1 { margin: 0; font-size: 19px; color: var(--primary-blue); }
+        .notary-info h2 { margin: 2px 0; font-size: 15px; font-weight: normal; }
+
+        .section-title {
+            background-color: var(--header-bg);
+            color: white;
+            text-align: left;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 12px;
+            margin: 10px 0 6px 0;
+            text-transform: uppercase;
+        }
+
+        .row { display: flex; gap: 10px; margin-bottom: 6px; width: 100%; align-items: flex-end; }
+        .field { display: flex; flex-direction: column; flex: 1; text-align: left; }
+
+        label { font-size: 10px; font-weight: bold; color: #555; margin-bottom: 1px; text-transform: uppercase; text-align: left; }
+        
+        .question-label { font-size: 10.5px; font-weight: bold; color: #333; margin-bottom: 3px; display: block; text-align: left; }
+
+        input[type="text"], input[type="date"], input[type="email"], select:not(.toggle-select) {
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            padding: 2px 0;
+            font-size: 12px;
+            background: transparent;
+            outline: none;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .radio-group { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 3px; font-size: 11px; }
+        .radio-item { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        input[type="radio"], input[type="checkbox"] { margin: 0; cursor: pointer; }
+
+        .legal-text { font-size: 10px; text-align: justify; margin-top: 10px; line-height: 1.4; color: #333; font-style: italic; font-weight: bold;}
+
+        /* Estilos para la tabla de documentos - COMPACTADOS */
+        .doc-table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 10.5px; }
+        .doc-table th { font-weight: bold; text-align: center; padding-bottom: 4px; font-size: 11px;}
+        .doc-table td { padding: 2px 0; vertical-align: middle; }
+        .doc-table .col-doc { width: 45%; font-weight: bold; color: #333; text-transform: uppercase; text-align: left; }
+        .doc-table .col-check { width: 18%; text-align: center; }
+        
+        .doc-table td.col-check div { 
+            /* SE ELIMINÓ EL BORDE */
+            height: 100%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 2px 0;
+        }
+
+        /* Sección de firma y huella - COMPACTADA */
+        .signature-section {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            page-break-inside: avoid;
+        }
+
+        .sig-box { width: 350px; text-align: center; margin-bottom: 15px;}
+        .sig-line { border-top: 1px solid black; padding-top: 5px; font-size: 11px; font-weight: bold; line-height: 1.3; text-transform: uppercase; }
+
+        /* Estilos para la huella dactilar */
+        .huella-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .huella-cuadro {
+            width: 80px;
+            height: 100px;
+            border: 2px solid black;
+            margin-bottom: 5px;
+        }
+        .huella-label {
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .controls { position: fixed; left: 15px; top: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; }
+        button { padding: 8px 15px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        .btn-pdf { background-color: #27ae60; }
+        .btn-clear { background-color: #e74c3c; }
+        
+        .hide-on-pdf { /* Clase para ocultar en PDF */ }
+        .note { font-size: 9px; color: #777; font-style: italic; margin-top: 2px; text-align: left;}
+
+        /* Select para ocultar/mostrar secciones */
+        .toggle-select { font-size: 10px; margin-left: 10px; border: 1px solid #ccc; color: black; background: white; cursor: pointer; padding: 1px 4px; width: auto !important;}
+    </style>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/3NY9rgmB/Logo-Enhanced.png">
+</head>
+<body>
+
+    <div class="controls hide-on-pdf">
+        <button class="btn-pdf" onclick="generarPDF()">DESCARGAR PDF</button>
+        <button class="btn-clear" onclick="location.reload()">REINICIAR</button>
+    </div>
+
+    <div id="form-content">
+        <!-- ================= PÁGINA 1 ================= -->
+        <div class="page-container">
+            <div class="marca-agua"></div>
+            <div class="content-layer">
+                
+                <div class="main-header">
+                    <div class="logo-container">
+                        <img src="https://i.postimg.cc/3NY9rgmB/Logo-Enhanced.png" class="logo-img" alt="Logo" crossorigin="anonymous">
+                    </div>
+                    <div class="notary-info">
+                        <h1>NOTARIO PÚBLICO NO. 129</h1>
+                        <h2>MAESTRO EN DERECHO JOSÉ GODÍNEZ ARGÜELLO</h2>
+                        <strong style="font-size: 13px; display: block; margin-top: 4px;">FORMATO DE ENTREVISTA CLIENTE O USUARIO</strong>
+                    </div>
+                    <div style="width: 85px;"></div>
+                </div>
+
+                <div class="section-title" style="margin-top: 0; text-align: left;">I. IDENTIFICACIÓN DEL CLIENTE</div>
+                
+                <div class="row">
+                    <div class="field" style="flex: 2;"><label>NOMBRE COMPLETO:</label><input type="text" id="input-nombre" oninput="calcularRFCyCURP()"></div>
+                    <div class="field"><label>FECHA DE NACIMIENTO:</label><input type="date" id="input-fecha" onchange="calcularRFCyCURP()"></div>
+                </div>
+                
+                <div class="row" style="display: none;"> <!-- Ocultos para el calculo -->
+                    <input type="text" id="input-paterno">
+                    <input type="text" id="input-materno">
+                    <select id="input-sexo"><option value=""></option><option value="H">H</option><option value="M">M</option></select>
+                </div>
+
+                <div class="row" style="align-items: center;">
+                    <div class="field" style="flex: 1.5;">
+                        <label>IDENTIFICACIÓN PRESENTADA:</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="identificacion" value="INE"> INE</label>
+                            <label class="radio-item"><input type="radio" name="identificacion" value="PASAPORTE"> PASAPORTE</label>
+                            <label class="radio-item" style="flex:1;"><input type="radio" name="identificacion" value="OTRO"> OTRO <input type="text" placeholder="ESPECIFIQUE" style="border-bottom: 1px solid #bdc3c7;"></label>
+                        </div>
+                    </div>
+                    <div class="field"><label>NO. DE DOCUMENTO:</label><input type="text"></div>
+                </div>
+
+                <div class="row">
+                    <div class="field"><label>RFC:</label><input type="text" id="input-rfc" style="text-transform: uppercase;"></div>
+                    <div class="field"><label>CURP:</label><input type="text" id="input-curp" style="text-transform: uppercase;"></div>
+                    <div class="field"><label>NACIONALIDAD:</label><input type="text" value="MEXICANA"></div>
+                </div>
+
+                <div class="row" style="align-items: center;">
+                    <div class="field" style="flex: 1;">
+                        <label>ESTADO CIVIL:</label>
+                        <select id="estado-civil" onchange="toggleRegimen()">
+                            <option value=""></option>
+                            <option value="SOLTERO (A)">SOLTERO (A)</option>
+                            <option value="CASADO (A)">CASADO (A)</option>
+                            <option value="DIVORCIADO (A)">DIVORCIADO (A)</option>
+                            <option value="VIUDO (A)">VIUDO (A)</option>
+                            <option value="UNIÓN LIBRE">UNIÓN LIBRE</option>
+                        </select>
+                    </div>
+                    <div class="field" id="sec-regimen" style="display: none; flex: 2;">
+                        <label>RÉGIMEN MATRIMONIAL:</label>
+                        <input type="text">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="field"><label>DOMICILIO FISCAL ACTUAL:</label><input type="text" id="domicilio-fiscal" oninput="copiarDomicilio()"></div>
+                </div>
+
+                <div class="row" style="align-items: center; margin-top: 5px;">
+                    <div class="field" style="flex: none; width: auto; margin-right: 15px;">
+                        <label>¿DOMICILIO FISCAL COINCIDE CON EL DOMICILIO DONDE HABITA?</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="coincide_domicilio" value="SI" onchange="copiarDomicilio()"> SI</label>
+                            <label class="radio-item"><input type="radio" name="coincide_domicilio" value="NO" onchange="limpiarDomicilio()"> NO</label>
+                        </div>
+                    </div>
+                    <div class="field"><label>DOMICILIO DONDE VIVE ACTUALMENTE:</label><input type="text" id="domicilio-actual"></div>
+                </div>
+
+                <div class="row" style="align-items: center;">
+                    <div class="field" style="flex: 1.5;">
+                        <label>TIPO DE VIVIENDA:</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="tipo_vivienda" value="CASA PROPIA"> CASA PROPIA</label>
+                            <label class="radio-item"><input type="radio" name="tipo_vivienda" value="RENTA"> RENTA</label>
+                            <label class="radio-item" style="flex:1;"><input type="radio" name="tipo_vivienda" value="OTRO"> OTRO <input type="text" placeholder="ESPECIFIQUE" style="border-bottom: 1px solid #bdc3c7;"></label>
+                        </div>
+                    </div>
+                    <div class="field"><label>ANTIGÜEDAD EN EL DOMICILIO:</label><input type="text"></div>
+                </div>
+
+                <div class="row">
+                    <div class="field"><label>TELÉFONO CELULAR:</label><input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+                    <div class="field"><label>TEL. DE CASA:</label><input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+                    <div class="field" style="flex: 1.5;"><label>CORREO ELECTRÓNICO:</label><input type="email"></div>
+                </div>
+
+                <div class="section-title" style="text-align: left;">II. DECLARACIÓN DE LA OPERACIÓN</div>
+                <div class="row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                    <label class="question-label">1.- ¿CUÁL ES EL PROPÓSITO O DESTINO DE LA OPERACIÓN?</label>
+                    <div class="radio-group">
+                        <label class="radio-item"><input type="radio" name="proposito_operacion" value="USO HABITACIONAL"> USO HABITACIONAL</label>
+                        <label class="radio-item"><input type="radio" name="proposito_operacion" value="CONSTRUCCION VIVIENDA PARA VENTA"> CONSTRUCCIÓN VIVIENDA PARA VENTA</label>
+                        <label class="radio-item"><input type="radio" name="proposito_operacion" value="INVERSIÓN A LARGO PLAZO/PLUSVALIA"> INVERSIÓN A LARGO PLAZO/PLUSVALÍA</label>
+                        <label class="radio-item" style="flex:1;"><input type="radio" name="proposito_operacion" value="OTRO"> OTRO <input type="text" style="border-bottom: 1px solid #bdc3c7;"></label>
+                    </div>
+                </div>
+
+                <div class="section-title" style="text-align: left;">III. PERFIL ECONÓMICO Y ORIGEN DE LOS RECURSOS</div>
+                
+                <div class="row">
+                    <div class="field"><label>1.- ¿CUÁL ES SU OCUPACIÓN, PROFESIÓN, ACTIVIDAD ECONÓMICA U OFICIO PRINCIPAL?</label><input type="text"></div>
+                </div>
+
+                <div class="row">
+                    <div class="field"><label>ANTIGÜEDAD EN EL EMPLEO O ACTIVIDAD:</label><input type="text"></div>
+                    <div class="field"><label>NSS:</label><input type="text"></div>
+                    <div class="field"><label>PUESTO:</label><input type="text"></div>
+                    <div class="field"><label>ING. PROMEDIO:</label><input type="text" placeholder="$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></div>
+                </div>
+
+                <div class="row" style="align-items: center;">
+                    <div class="field" style="flex: none; width: auto; margin-right: 15px;">
+                        <label>¿SI ES NEGOCIO PROPIO TIENE ESTABLECIMIENTO?</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="establecimiento" value="RENTA"> RENTA</label>
+                            <label class="radio-item"><input type="radio" name="establecimiento" value="PROPIO"> PROPIO</label>
+                        </div>
+                    </div>
+                    <div class="field"><label>NOMBRE DE LA EMPRESA:</label><input type="text"></div>
+                </div>
+
+                <div class="row">
+                    <div class="field" style="flex: 2;"><label>DOMICILIO DE LA EMPRESA:</label><input type="text"></div>
+                    <div class="field"><label>TELÉFONO DE LA EMPRESA:</label><input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+                </div>
+
+                <div class="row" style="flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 10px;">
+                    <label class="question-label">2.- ¿CUÁL ES LA PRINCIPAL FUENTE DE INGRESOS DE DÓNDE PROVIENEN LOS RECURSOS PARA REALIZAR ESTA COMPRA?</label>
+                    <div class="field" style="width: 100%;">
+                        <select id="fuente-ingresos" onchange="toggleNotaIngreso()">
+                            <option value=""></option>
+                            <option value="SUELDOS Y SALARIOS">SUELDOS Y SALARIOS</option>
+                            <option value="VENTA PREVIA DE OTRO INMUEBLE">VENTA PREVIA DE OTRO INMUEBLE</option>
+                            <option value="ACTIVIDAD EMPRESARIAL (NEGOCIO PROPIO)">ACTIVIDAD EMPRESARIAL (NEGOCIO PROPIO)</option>
+                            <option value="CRÉDITO HIPOTECARIO/FINANCIAMIENTO">CRÉDITO HIPOTECARIO/FINANCIAMIENTO</option>
+                            <option value="HERENCIA/DONACIÓN/LEGADO">HERENCIA/DONACIÓN/LEGADO</option>
+                            <option value="INGRESO FAMILIAR CONYUGE/PADRE O MADRE">INGRESO FAMILIAR CONYUGE/PADRE O MADRE</option>
+                            <option value="HONORARIOS PROFESIONALES">HONORARIOS PROFESIONALES</option>
+                        </select>
+                    </div>
+                    <!-- NOTA OCULTA POR DEFECTO -->
+                    <div id="nota-ingreso-familiar" class="note" style="display: none;">EN EL CASO DE INGRESO FAMILIAR SE REQUIERE LA DOCUMENTACIÓN Y LA ENTREVISTA DEL CONYUGE O PARTICIPANTE DEL INGRESO QUE FUNGIRA COMO COPROPIETARIO DEL INMUEBLE A ADQUIRIR.</div>
+                </div>
+
+                <div class="row" style="flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 15px;">
+                    <label class="question-label">3.- ESPECIFIQUE EL ESQUEMA DE PAGO, ¿CÓMO LIQUIDARÁ EL VALOR DE LA OPERACIÓN?</label>
+                    
+                    <div class="row" style="margin-bottom: 2px;">
+                        <div class="field" style="flex: 0.5;"><label>MONTO EN EFECTIVO:</label></div>
+                        <div class="field" style="flex: 2;"><input type="text" placeholder="CANTIDAD" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></div>
+                    </div>
+                    <div class="note" style="margin-top: -3px; margin-bottom: 8px;">POR DISPOSICIÓN DE LA LEY EL IMPORTE DEL EFECTIVO NO PUEDE SER MAYOR A 800,000</div>
+
+                    <div class="row">
+                        <div class="field" style="flex: 0.5;"><label>TRANSFERENCIA (SPEI):</label></div>
+                        <div class="field" style="flex: 2;"><input type="text" placeholder="CANTIDAD" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></div>
+                    </div>
+                    <div class="row">
+                        <div class="field"><label>BANCO:</label><input type="text"></div>
+                        <div class="field"><label>NO. CTA:</label><input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+                        <div class="field" style="flex: 1.5;"><label>NOMBRE DEL TITULAR:</label><input type="text"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PÁGINA 2 ================= -->
+        <div class="page-container no-break">
+            <div class="marca-agua"></div>
+            <div class="content-layer">
+
+                <div class="section-title" style="text-align: left; margin-top: 0;">IV. DECLARACIÓN DE BENEFICIARIO CONTROLADOR (DUEÑO REAL)</div>
+                <div class="row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                    <label class="question-label">¿LOS RECURSOS ECONÓMICOS SON DE SU PROPIEDAD Y LA COMPRA LA REALIZA A NOMBRE Y CUENTA PROPIA?</label>
+                    <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                        <label class="radio-item"><input type="radio" name="beneficiario_controlador" value="SI"> SI (YO SOY EL DUEÑO REAL Y DESTINATARIO FINAL DEL TERRENO)</label>
+                        <label class="radio-item"><input type="radio" name="beneficiario_controlador" value="NO"> NO (ACTÚO POR CUENTA DE UN TERCERO (REQUIERE LLENAR ANEXO DE BENEFICIARIO CONTROLADOR))</label>
+                    </div>
+                    <div class="note">NOTA. EN CASO DE EXISTIR DUEÑO O BENEFICIARIO DEBERÁ LLENAR EL MISMO FORMATO DE ENTREVISTA</div>
+                </div>
+
+                <div id="sec-ppe">
+                    <div class="section-title" style="text-align: left;">
+                        V. PERSONAS POLÍTICAMENTE EXPUESTAS
+                        <select class="toggle-select" id="ppe-toggle" onchange="actualizarVisibilidadPPE()">
+                            <option value="NO">NO</option>
+                            <option value="SI">SI</option>
+                        </select>
+                    </div>
+                    <div id="ppe-content" style="display: none;">
+                        <div class="row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                            <label class="question-label" style="line-height: 1.3;">¿USTED O ALGÚN FAMILIAR DESEMPEÑA O HA DESEMPEÑADO ALGÚN CARGO PÚBLICO RELEVANTE O PUESTO GUBERNAMENTAL DE ALTA RESPONSABILIDAD EN MÉXICO EN LOS ÚLTIMOS AÑOS?</label>
+                            
+                            <div class="row" style="margin-top: 5px;">
+                                <div class="field" style="flex: 0.3;">
+                                    <label>SI/NO</label>
+                                    <select><option value=""></option><option value="SI">SI</option><option value="NO">NO</option></select>
+                                </div>
+                                <div class="field"><label>ESPECIFIQUE EL CARGO:</label><input type="text"></div>
+                                <div class="field" style="flex: 0.5;"><label>FECHA DEL CARGO:</label><input type="text"></div>
+                            </div>
+
+                            <div class="row">
+                                <div class="field"><label>EN CASO DEL FAMILIAR INDICAR PARENTESCO:</label><input type="text"></div>
+                                <div class="field" style="flex: 1.5;"><label>PUESTO O CARGO:</label><input type="text"></div>
+                                <div class="field" style="flex: 0.5;"><label>FECHA DEL CARGO:</label><input type="text"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title" style="text-align: left;">VI. INMUEBLE ADQUIRIDO</div>
+                
+                <div class="row" style="align-items: flex-end; gap: 8px;">
+                    <div class="field" style="flex: none; width: auto;">
+                        <select id="tipo-inmueble" onchange="cambiarLabelNumLote()" style="font-weight: bold; font-size: 10.5px; color: var(--primary-blue); padding: 1px 0; border-bottom: 1px solid var(--border-color);">
+                            <option value="CASA HABITACIÓN">CASA HABITACIÓN</option>
+                            <option value="TERRENO BALDÍO">TERRENO BALDÍO</option>
+                        </select>
+                    </div>
+                    <div class="field" style="flex: 0.5;"><label id="lbl-num-lote">NÚMERO:</label><input type="text"></div>
+                    <div class="field" style="flex: 2;"><label>CALLE:</label><input type="text"></div>
+                    <div class="field" style="flex: 1.5;"><label>COLONIA:</label><input type="text"></div>
+                    <div class="field" style="flex: 1.5;"><label>CIUDAD:</label><input type="text"></div>
+                    <div class="field" style="flex: 1;"><label>PRECIO:</label><input type="text" placeholder="$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></div>
+                </div>
+
+                <div class="row" style="align-items: center; margin-top: 5px;">
+                    <div class="field"><label>FECHA DE LA ENTREVISTA:</label><input type="date"></div>
+                    <div class="field"><label>LUGAR DE LA ENTREVISTA:</label><input type="text"></div>
+                    <div class="field" style="flex: 0.8;">
+                        <label>MODALIDAD:</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="modalidad" value="PRESENCIAL"> PRESENCIAL</label>
+                            <label class="radio-item"><input type="radio" name="modalidad" value="REMOTA"> REMOTA</label>
+                        </div>
+                    </div>
+                    <div class="field" style="flex: 1.2;"><label>ASESOR/ENTREVISTADOR:</label><input type="text"></div>
+                </div>
+
+                <div class="section-title" style="text-align: left;">VII. DECLARACIÓN BAJO PROTESTA DE DECIR VERDAD Y FIRMAS</div>
+                <div class="legal-text">
+                    MANIFIESTO BAJO PROTESTA DE DECIR VERDAD QUE LOS DATOS ASENTADOS EN ESTA ENTREVISTA SON REALES, DE VIVA VOZ, QUE LOS DOCUMENTOS PRESENTADOS EN EL EXPEDIENTE SON CORRECTOS Y CORRESPONDEN A MI SITUACIÓN ACTUAL; Y LOS RECURSOS ECONÓMICOS UTILIZADOS PARA LA COMPRA DEL TERRENO PROVIENEN DE ACTIVIDADES TOTALMENTE LÍCITAS Y LEGÍTIMAS DE MI PROPIEDAD. ASÍ MISMO DECLARO BAJO PROTESTA DE DECIR VERDAD QUE ACTÚO EN NOMBRE Y POR CUENTA PROPIA, SIENDO EL ÚNICO Y DIRECTO BENEFICIARIO DE LOS DERECHOS DE USO, GOCE, DISFRUTE Y DISPOSICIÓN DEL BIEN INMUEBLE MATERIA DE LA COMPRA VENTA, NO EXISTIENDO NINGÚN OTRO DUEÑO BENEFICIARIO O BENEFICIARIO CONTROLADOR AJENO A MI PERSONA.
+                </div>
+
+                <div class="row" style="margin-top: 10px;"> <!-- Espacio reducido -->
+                    <div class="field" style="flex: none; width: 100%;">
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45%; text-align: left; padding-bottom: 4px;"><label style="margin: 0; font-size: 11px;">DOCUMENTOS ENTREGADOS:</label></th>
+                                    <th style="width: 15%;">ORIGINAL</th>
+                                    <th style="width: 15%;">COPIA</th>
+                                    <th style="width: 15%;">COTEJADA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="col-doc">ACTA DE NACIMIENTO</td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc1_orig" onchange="checkMutuo(1, 'orig')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc1_copia" onchange="checkMutuo(1, 'copia')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc1_cotej" style="visibility: hidden;"></div></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-doc">ACTA DE MATRIMONIO</td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc2_orig" onchange="checkMutuo(2, 'orig')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc2_copia" onchange="checkMutuo(2, 'copia')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc2_cotej" style="visibility: hidden;"></div></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-doc">INE / PASAPORTE</td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc3_orig" onchange="checkMutuo(3, 'orig')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc3_copia" onchange="checkMutuo(3, 'copia')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc3_cotej" style="visibility: hidden;"></div></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-doc">CURP</td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc4_orig" onchange="checkMutuo(4, 'orig')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc4_copia" onchange="checkMutuo(4, 'copia')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc4_cotej" style="visibility: hidden;"></div></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-doc">CONSTANCIA DE SITUACIÓN FISCAL</td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc5_orig" onchange="checkMutuo(5, 'orig')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc5_copia" onchange="checkMutuo(5, 'copia')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc5_cotej" style="visibility: hidden;"></div></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-doc">COMPROBANTE DE DOMICILIO</td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc6_orig" onchange="checkMutuo(6, 'orig')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc6_copia" onchange="checkMutuo(6, 'copia')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc6_cotej" style="visibility: hidden;"></div></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-doc">COMPROBANTE DE INGRESOS<br><span style="text-transform: none; font-weight: normal; font-size: 9.5px; color: #555;">(ESTADO DE CUENTA DE DONDE TRANSFIERE)</span></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc7_orig" onchange="checkMutuo(7, 'orig')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc7_copia" onchange="checkMutuo(7, 'copia')"></div></td>
+                                    <td class="col-check"><div><input type="checkbox" id="doc7_cotej" style="visibility: hidden;"></div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="signature-section">
+                    <div class="sig-box">
+                        <div class="sig-line" id="texto-firma">NOMBRE Y FIRMA DEL CLIENTE</div>
+                    </div>
+                    <div class="huella-box">
+                        <div class="huella-cuadro"></div>
+                        <div class="huella-label">HUELLA DACTILAR ÍNDICE</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // LÓGICA DE CÁLCULO RFC Y CURP + ACTUALIZACIÓN DE FIRMA
+        function quitarAcentos(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(); }
+        function obtenerVocalInterna(str) { const v = str.substring(1).match(/[AEIOU]/); return v ? v[0] : 'X'; }
+        function obtenerConsonanteInterna(str) { const c = str.substring(1).match(/[BCDFGHJKLMNPQRSTVWXYZ]/); return c ? c[0] : 'X'; }
+
+        function calcularRFCyCURP() {
+            const nomInput = document.getElementById('input-nombre');
+            
+            let nom = "", pat = "", mat = "";
+            let nombreCompletoArr = nomInput.value.trim().split(' ');
+            
+            if(nombreCompletoArr.length >= 3) {
+                pat = nombreCompletoArr[nombreCompletoArr.length - 2];
+                mat = nombreCompletoArr[nombreCompletoArr.length - 1];
+                nom = nombreCompletoArr.slice(0, nombreCompletoArr.length - 2).join(' ');
+            } else if (nombreCompletoArr.length === 2) {
+                nom = nombreCompletoArr[0];
+                pat = nombreCompletoArr[1];
+            } else {
+                nom = nombreCompletoArr[0];
+            }
+
+            const fecha = document.getElementById('input-fecha').value;
+            const sexo = "H"; 
+
+            // ACTUALIZAR FIRMA
+            const firma = document.getElementById('texto-firma');
+            
+            if (nomInput.value.trim() !== "") {
+                firma.innerHTML = nomInput.value.trim().toUpperCase();
+            } else {
+                firma.innerHTML = "NOMBRE Y FIRMA DEL CLIENTE";
+            }
+
+            if (!nom || !pat || !fecha) return;
+
+            let nombres = quitarAcentos(nom).split(' ');
+            let nomProcesado = (nombres.length > 1 && (nombres[0] === 'JOSE' || nombres[0] === 'MARIA' || nombres[0] === 'J' || nombres[0] === 'MA')) ? nombres[1] : nombres[0];
+            
+            let p = quitarAcentos(pat);
+            let m = quitarAcentos(mat);
+
+            let let1 = p.charAt(0) || 'X';
+            let let2 = obtenerVocalInterna(p);
+            let let3 = m ? m.charAt(0) : 'X';
+            let let4 = nomProcesado.charAt(0) || 'X';
+
+            let year = fecha.substring(2, 4);
+            let month = fecha.substring(5, 7);
+            let day = fecha.substring(8, 10);
+
+            let rfcBase = `${let1}${let2}${let3}${let4}${year}${month}${day}`;
+
+            let consPat = obtenerConsonanteInterna(p);
+            let consMat = m ? obtenerConsonanteInterna(m) : 'X';
+            let consNom = obtenerConsonanteInterna(nomProcesado);
+            let curpBase = `${rfcBase}${sexo}XX${consPat}${consMat}${consNom}`;
+
+            const inputRFC = document.getElementById('input-rfc');
+            const inputCURP = document.getElementById('input-curp');
+
+            if (inputRFC && inputRFC.value.length <= 10) inputRFC.value = rfcBase;
+            if (inputCURP && inputCURP.value.length <= 16) inputCURP.value = curpBase;
+        }
+
+        function copiarDomicilio() {
+            const fiscal = document.getElementById('domicilio-fiscal').value;
+            const radioSi = document.querySelector('input[name="coincide_domicilio"][value="SI"]');
+            const actual = document.getElementById('domicilio-actual');
+            if (radioSi && radioSi.checked) {
+                actual.value = fiscal;
+            }
+        }
+
+        function limpiarDomicilio() {
+            const actual = document.getElementById('domicilio-actual');
+            actual.value = "";
+        }
+
+        function toggleRegimen() {
+            const estadoCivil = document.getElementById('estado-civil').value;
+            const secRegimen = document.getElementById('sec-regimen');
+            if (estadoCivil === 'CASADO (A)') {
+                secRegimen.style.display = 'flex';
+            } else {
+                secRegimen.style.display = 'none';
+            }
+        }
+        
+        function actualizarVisibilidadPPE() {
+            const ppeAplica = document.getElementById('ppe-toggle').value === 'SI';
+            document.getElementById('ppe-content').style.display = ppeAplica ? 'block' : 'none';
+        }
+
+        // MOSTRAR U OCULTAR LA NOTA DE INGRESO FAMILIAR
+        function toggleNotaIngreso() {
+            const select = document.getElementById('fuente-ingresos').value;
+            const nota = document.getElementById('nota-ingreso-familiar');
+            if (select === 'INGRESO FAMILIAR CONYUGE/PADRE O MADRE') {
+                nota.style.display = 'block';
+            } else {
+                nota.style.display = 'none';
+            }
+        }
+
+        // CAMBIO DE NÚMERO A LOTE
+        function cambiarLabelNumLote() {
+            const tipo = document.getElementById('tipo-inmueble').value;
+            const lbl = document.getElementById('lbl-num-lote');
+            if (tipo === 'TERRENO BALDÍO') {
+                lbl.innerText = 'LOTE:';
+            } else {
+                lbl.innerText = 'NÚMERO:';
+            }
+        }
+
+        function checkMutuo(rowId, tipo) {
+            const orig = document.getElementById(`doc${rowId}_orig`);
+            const copia = document.getElementById(`doc${rowId}_copia`);
+            const cotej = document.getElementById(`doc${rowId}_cotej`);
+            
+            if (tipo === 'orig' && orig.checked) {
+                copia.checked = false;
+            } else if (tipo === 'copia' && copia.checked) {
+                orig.checked = false;
+            }
+            
+            if (copia.checked) {
+                cotej.style.visibility = 'visible';
+            } else {
+                cotej.style.visibility = 'hidden';
+                cotej.checked = false;
+            }
+        }
+
+        function generarPDF() {
+            const elementoFormulario = document.getElementById('form-content');
+            
+            const nom = document.getElementById('input-nombre').value.trim().toUpperCase();
+            const nombreArchivo = nom ? `Entrevista_Terreno_${nom}.pdf` : `Entrevista_Terreno.pdf`;
+            
+            document.querySelectorAll('.hide-on-pdf').forEach(el => el.style.display = 'none');
+            
+            const ppeAplica = document.getElementById('ppe-toggle').value === 'SI';
+            document.getElementById('ppe-toggle').style.display = 'none';
+            if (!ppeAplica) document.getElementById('sec-ppe').style.display = 'none';
+
+            const inputsCambiados = [];
+            const inputsActivos = elementoFormulario.querySelectorAll('input, select');
+
+            inputsActivos.forEach(inp => {
+                if (inp.closest('#sec-regimen') && document.getElementById('sec-regimen').style.display === 'none') return;
+
+                if (inp.style.display !== 'none' && inp.style.visibility !== 'hidden' && !inp.classList.contains('hide-on-pdf') && inp.type !== 'hidden' && inp.id !== 'ppe-toggle') {
+                    const span = document.createElement('span');
+                    
+                    let textValue = inp.value || " ";
+                    
+                    if (inp.type === 'radio' || inp.type === 'checkbox') {
+                        span.innerHTML = inp.checked ? '☒' : '☐';
+                        span.style.fontSize = "15px";
+                        span.style.fontWeight = "bold";
+                        span.style.color = inp.checked ? "var(--primary-blue)" : "#777";
+                        span.style.marginRight = "5px";
+                        span.style.display = "inline-block";
+                        span.style.transform = "translateY(2px)";
+                        textValue = ""; 
+                    } else if (inp.type === 'date' && inp.value) {
+                        const parts = inp.value.split('-'); 
+                        if (parts.length === 3) {
+                            const meses = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+                            textValue = `${parts[2]} ${meses[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
+                        }
+                    } else if (inp.tagName === 'SELECT' && inp.value !== "") {
+                        textValue = inp.options[inp.selectedIndex].text;
+                    }
+
+                    if(textValue !== "") {
+                        span.innerText = textValue;
+                        span.style.borderBottom = "1px solid #bdc3c7";
+                        span.style.fontSize = "12px"; 
+                        span.style.display = "inline-block";
+                        span.style.width = inp.style.width || "100%"; 
+                        span.style.textAlign = inp.style.textAlign || "left"; 
+                        span.style.minHeight = "15px"; 
+                        span.style.boxSizing = "border-box";
+                    }
+
+                    inp.parentNode.replaceChild(span, inp);
+                    inputsCambiados.push({ padre: span.parentNode, spanActual: span, inputOriginal: inp });
+                }
+            });
+
+            const opciones = {
+                margin: [0, 0, 0, 0], 
+                filename: nombreArchivo,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
+                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opciones).from(elementoFormulario).save().then(() => {
+                restaurarVista(inputsCambiados);
+            }).catch(error => {
+                restaurarVista(inputsCambiados);
+            });
+        }
+
+        function restaurarVista(inputsCambiados) {
+            document.querySelectorAll('.hide-on-pdf').forEach(el => el.style.display = 'flex');
+            document.getElementById('ppe-toggle').style.display = 'inline-block';
+            document.getElementById('sec-ppe').style.display = 'block';
+            actualizarVisibilidadPPE();
+            inputsCambiados.forEach(item => { item.padre.replaceChild(item.inputOriginal, item.spanActual); });
+        }
+
+        // Seguridad
+        document.addEventListener('contextmenu', function(event) { event.preventDefault(); });
+        document.onkeydown = function(event) {
+            if (event.keyCode == 123 || (event.ctrlKey && event.shiftKey && event.keyCode == 73) || (event.ctrlKey && event.keyCode == 85)) return false;
+        };
+    </script>
+</body>
+</html>
